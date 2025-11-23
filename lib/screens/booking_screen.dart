@@ -136,7 +136,220 @@ class BookingScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
+
+            // Time Selection
+            Text(
+              'Select a Time',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 2.5,
+              ),
+              itemCount: allTimes.length,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemBuilder: (context, index) {
+                final time = allTimes[index];
+                final isAvailable = availableTimes.contains(time);
+                final isSelected = bookingState.selectedTime == time;
+
+                return ElevatedButton(
+                  onPressed: isAvailable
+                      ? () => bookingNotifier.selectTime(time)
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: isSelected
+                        ? Colors.white
+                        : (isAvailable ? theme.primaryColor : Colors.grey),
+                    backgroundColor: isSelected
+                        ? theme.primaryColor
+                        : (isAvailable ? Colors.white : Colors.grey.shade200),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    side: isAvailable
+                        ? BorderSide(color: theme.primaryColor)
+                        : BorderSide.none,
+                    elevation: 0,
+                  ),
+                  child: Text(time),
+                );
+              },
+            ),
+            const SizedBox(height: 24),
+
+            // Duration
+            Text(
+              'Duration',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                _buildDurationButton(
+                  context,
+                  theme,
+                  bookingNotifier,
+                  bookingState,
+                  1,
+                ),
+                _buildDurationButton(
+                  context,
+                  theme,
+                  bookingNotifier,
+                  bookingState,
+                  2,
+                ),
+                _buildDurationButton(
+                  context,
+                  theme,
+                  bookingNotifier,
+                  bookingState,
+                  3,
+                ),
+              ],
+            ),
+            const SizedBox(height: 100), // Space for the bottom bar
           ],
+        ),
+      ),
+      bottomSheet: Container(
+        padding: const EdgeInsets.all(16.0),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 10,
+              offset: Offset(0, -2),
+            ),
+          ],
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Total Price', style: TextStyle(color: Colors.grey)),
+                Text(
+                  bookingState.totalPrice != null
+                      ? '\$${bookingState.totalPrice!.toStringAsFixed(2)}'
+                      : '\$0.00',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            ElevatedButton(
+              onPressed: bookingState.isConfirmEnabled
+                  ? () async {
+                      // Simulate loading
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) =>
+                            const Center(child: CircularProgressIndicator()),
+                      );
+                      await Future.delayed(const Duration(milliseconds: 500));
+                      Navigator.pop(context); // Close loading dialog
+
+                      // Show success dialog
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          title: const Text('Booking Confirmed!'),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Your appointment with ${provider.name} has been successfully booked.',
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Date: ${DateFormat.yMMMd().format(bookingState.selectedDate!)}',
+                              ),
+                              Text('Time: ${bookingState.selectedTime}'),
+                              Text(
+                                'Duration: ${bookingState.selectedDuration} Hour(s)',
+                              ),
+                              Text(
+                                'Total Price: \$${bookingState.totalPrice!.toStringAsFixed(2)}',
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Done'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  : null,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 40,
+                  vertical: 16,
+                ),
+              ),
+              child: const Text('Confirm', style: TextStyle(fontSize: 18)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDurationButton(
+    BuildContext context,
+    ThemeData theme,
+    BookingScreenNotifier notifier,
+    BookingState state,
+    int duration,
+  ) {
+    final isSelected = state.selectedDuration == duration;
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: ElevatedButton(
+          onPressed: () => notifier.selectDuration(duration),
+          style: ElevatedButton.styleFrom(
+            foregroundColor: isSelected ? Colors.white : theme.primaryColor,
+            backgroundColor: isSelected
+                ? theme.primaryColor
+                : theme.primaryColor.withOpacity(0.1),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+          ),
+          child: Text('$duration Hour${duration > 1 ? 's' : ''}'),
         ),
       ),
     );

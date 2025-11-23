@@ -39,14 +39,34 @@ class BookingScreenNotifier extends StateNotifier<BookingState> {
 
   void selectDate(DateTime date) {
     state = state.copyWith(selectedDate: date);
+    _updateConfirmButtonState();
+    _calculateTotal();
   }
 
   void selectTime(String time) {
     state = state.copyWith(selectedTime: time);
+    _updateConfirmButtonState();
   }
 
   void selectDuration(int duration) {
     state = state.copyWith(selectedDuration: duration);
+    _calculateTotal();
+    _updateConfirmButtonState();
+  }
+
+  void _calculateTotal() {
+    if (state.selectedDuration != null) {
+      state = state.copyWith(totalPrice: hourlyRate * state.selectedDuration!);
+    }
+  }
+
+  void _updateConfirmButtonState() {
+    state = state.copyWith(
+      isConfirmEnabled:
+          state.selectedDate != null &&
+          state.selectedTime != null &&
+          state.selectedDuration != null,
+    );
   }
 }
 
