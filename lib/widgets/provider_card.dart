@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:service_provider_assessment/models/provider_model.dart';
+import 'package:service_provider_assessment/screens/booking_screen.dart';
 
 class ProviderCard extends StatelessWidget {
   final ServiceProvider provider;
@@ -50,7 +51,14 @@ class ProviderCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BookingScreen(provider: provider),
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 48),
               ),
